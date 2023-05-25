@@ -2,6 +2,7 @@
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Linq;
+using System.Windows;
 using System.Windows.Input;
 using System.Windows.Markup;
 
@@ -14,7 +15,7 @@ namespace Antelcat.Wpf.Commands;
 ///     on each child command sequentially.
 /// </summary>
 [ContentProperty("Commands")]
-public class AggregateCommand : ICommand {
+public class AggregateCommand : DependencyObject, ICommand {
 	#region Commands
 
 	/// <summary>
