@@ -53,6 +53,7 @@ public partial class ResourcesProvider  : ILanguageManager
 		OnPropertyChanged(nameof(Language));
 		OnPropertyChanged(nameof(English));
 		OnPropertyChanged(nameof(Chinese));
+		OnPropertyChanged(nameof(Description));
     }
 
     /// <summary>
@@ -69,6 +70,11 @@ public partial class ResourcesProvider  : ILanguageManager
     /// Chinese
     /// </summary>
 	public string Chinese => Resources.Chinese;
+
+    /// <summary>
+    /// Description
+    /// </summary>
+	public string Description => Resources.Description;
 
 
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -93,5 +99,10 @@ public partial class ResourcesKeys
     /// Chinese
     /// </summary>
 	public static string Chinese = nameof(Chinese);
+
+    /// <summary>
+    /// Description
+    /// </summary>
+	public static string Description = nameof(Description);
 
 }

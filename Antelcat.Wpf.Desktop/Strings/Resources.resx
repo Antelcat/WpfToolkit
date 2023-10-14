@@ -27,4 +27,7 @@
     <data name="Chinese" xml:space="preserve">
         <value>Chinese</value>
     </data>
+    <data name="Description" xml:space="preserve">
+        <value>Current language is {0}</value>
+    </data>
 </root>

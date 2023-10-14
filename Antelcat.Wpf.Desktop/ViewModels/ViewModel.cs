@@ -12,7 +12,8 @@ namespace Antelcat.Wpf.Desktop.ViewModels;
 public enum Language
 {
     English,
-    Chinese
+    Chinese,
+    Japanese
 }
 
 [INotifyPropertyChanged]
@@ -27,15 +28,19 @@ public partial class ViewModel
             {
                 Language.Chinese => new CultureInfo("zh"),
                 Language.English => new CultureInfo("en"),
+                Language.Japanese => new CultureInfo("jp"),
                 _ => new CultureInfo(0)
             };
             language = value;
             OnPropertyChanged();
+            OnPropertyChanged(nameof(Description));
         }
     }
 
     private Language language;
+
+    public Language Description => Language; 
     
-    public static Language[] Languages { get; } = { Language.English, Language.Chinese };
+    public static Language[] Languages { get; } = { Language.English, Language.Chinese, Language.Japanese };
 
 }

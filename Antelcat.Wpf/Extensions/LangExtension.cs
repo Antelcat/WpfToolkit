@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Dynamic;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Data;
+using System.Windows.Documents.Serialization;
 using System.Windows.Markup;
 using Antelcat.Wpf.Interfaces;
 
@@ -22,14 +24,14 @@ public static class LangCacheExtension
 
 public class LangExtension : MarkupExtension
 {
-	private static readonly ExpandoObject Target = new ();
+	private static readonly ExpandoObject Target = new();
 
-	private static readonly List<ILanguageManager> Providers = new ();
+	private static readonly List<ILanguageManager> Providers = new();
 
-	private static readonly List<Action> InitActions = new ();
+	private static readonly List<Action> InitActions = new();
 
 	private static bool generated;
-	
+
 	public static CultureInfo Culture
 	{
 		set
@@ -50,7 +52,7 @@ public class LangExtension : MarkupExtension
 	public static void RegisterLanguageSource(ILanguageManager instance)
 	{
 		if (Providers.Contains(instance)) return;
-		var props = instance.GetType().GetProperties();
+		var props  = instance.GetType().GetProperties();
 		var target = (IDictionary<string, object>)Target!;
 
 		void Update(object o, string s)
@@ -65,13 +67,14 @@ public class LangExtension : MarkupExtension
 		instance.PropertyChanged += (o, e) => Update(o!, e.PropertyName!);
 		foreach (var prop in props)
 		{
-			Update(instance,prop.Name);
+			Update(instance, prop.Name);
 		}
-		
+
 		if (culture != null)
 		{
 			instance.CurrentCulture = culture;
 		}
+
 		Providers.Add(instance);
 	}
 
@@ -80,15 +83,12 @@ public class LangExtension : MarkupExtension
 	public LangExtension()
 	{
 		proxy = new DependencyObject();
-		if (!generated)
-		{
-			InitActions.ForEach(x => x());
-			InitActions.Clear();
-		}
+		if (generated) return;
+		InitActions.ForEach(x => x());
+		InitActions.Clear();
 		generated = true;
 	}
 
-	public LangExtension(string key) : this() => Key = key;
 
 	public static readonly DependencyProperty KeyProperty = DependencyProperty.RegisterAttached(
 		nameof(Key),
@@ -103,9 +103,12 @@ public class LangExtension : MarkupExtension
 	}
 
 	public static readonly DependencyProperty SourceProperty = DependencyProperty.RegisterAttached(
-		nameof(Source), typeof(Binding), typeof(LangExtension), new PropertyMetadata(default(Binding)));
+		nameof(Source),
+		typeof(Binding),
+		typeof(LangExtension),
+		new PropertyMetadata(default(Binding)));
 
-	public Binding Source
+	public Binding? Source
 	{
 		get => (Binding)proxy.GetValue(SourceProperty);
 		set => proxy.SetValue(SourceProperty, value);
@@ -122,12 +125,10 @@ public class LangExtension : MarkupExtension
 
 	private static DependencyProperty GetTargetProperty(DependencyObject element)
 		=> (DependencyProperty)element.GetValue(TargetPropertyProperty);
+	
+	public IValueConverter? Converter { get; set; }
 
-	public BindingMode Mode { get; set; }
-
-	public IValueConverter Converter { get; set; }
-
-	public object ConverterParameter { get; set; }
+	public object? ConverterParameter { get; set; }
 
 	public override object? ProvideValue(IServiceProvider serviceProvider)
 	{
@@ -165,7 +166,10 @@ public class LangExtension : MarkupExtension
 			{
 				if (element.DataContext != null)
 				{
-					return SetLangBinding(element, targetProperty, keyBinding.Path, element.DataContext)!
+					return SetLangBinding(element,
+							targetProperty, 
+							keyBinding.Path, 
+							element.DataContext)?
 						.ProvideValue(serviceProvider);
 				}
 
@@ -212,35 +216,51 @@ public class LangExtension : MarkupExtension
 		PropertyPath path,
 		object dataContext)
 	{
-		if (targetProperty == null)
-			return null;
-		
+		if (targetProperty == null) return null;
+
 		BindingOperations.SetBinding(targetObject,
 			targetProperty,
 			new Binding
 			{
-				Path = path,
+				Path   = path,
 				Source = dataContext,
-				Mode = BindingMode.OneWay,
+				Mode   = BindingMode.OneWay,
 			});
 
 		var key = targetObject.GetValue(targetProperty) as string;
-		if (string.IsNullOrEmpty(key))
-			return null;
+		if (string.IsNullOrEmpty(key)) return null;
 
 		var binding = CreateLangBinding(key);
 		BindingOperations.SetBinding(targetObject, targetProperty, binding);
 		return binding;
 	}
 
-	private BindingBase CreateLangBinding(string key) => new Binding(key)
+	private BindingBase CreateLangBinding(string key)
 	{
-		Converter = Converter,
-		ConverterParameter = ConverterParameter,
-		UpdateSourceTrigger = UpdateSourceTrigger.Explicit,
-		Source = TryFind(Target, key),
-		Mode = BindingMode.OneWay
-	};
+		var ret = new Binding(key)
+		{
+			Converter           = Converter,
+			ConverterParameter  = ConverterParameter,
+			Source              = TryFind(Target, key),
+			Mode                = BindingMode.OneWay
+		};
+		if (Source == null)
+		{
+			ret.UpdateSourceTrigger = UpdateSourceTrigger.Explicit;
+			return ret;
+		}
+
+		var multi = new MultiBinding
+		{
+			Converter           = new MultiValueLangConverter(Target, Converter, ConverterParameter, Key is string),
+			Mode                = BindingMode.OneWay,
+			UpdateSourceTrigger = UpdateSourceTrigger.Explicit,
+			ConverterParameter  = ConverterParameter
+		};
+		multi.Bindings.Add(ret);
+		multi.Bindings.Add(Source);
+		return multi;
+	}
 
 	private static object TryFind(IDictionary<string, object?> target, string key)
 	{
@@ -248,6 +268,42 @@ public class LangExtension : MarkupExtension
 		{
 			target[key] = key;
 		}
+
 		return target;
+	}
+
+	private class MultiValueLangConverter : IMultiValueConverter
+	{
+		private readonly IDictionary<string,object?> resource;
+		private readonly IValueConverter?            converter;
+		private readonly object?                     converterParameter;
+		private readonly bool                        replace;
+		public MultiValueLangConverter(IDictionary<string, object?> resource,
+			IValueConverter? converter,
+			object? converterParameter, 
+			bool replace)
+		{
+			this.resource           = resource;
+			this.converter          = converter;
+			this.converterParameter = converterParameter;
+			this.replace            = replace;
+		}
+
+		public object? Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
+		{
+			var val = resource.TryGetValue(values[1].ToString() ?? string.Empty, out var ret)
+				?  ret
+				: values[1];
+			if (replace)
+			{
+				val = string.Format(values[0] as string ?? string.Empty, val);
+			}
+			return converter?.Convert(val, targetType, converterParameter, culture) ?? val;
+		}
+
+		public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
+		{
+			throw new NotSupportedException();
+		}
 	}
 }
