@@ -16,12 +16,11 @@ public enum Language
     Japanese
 }
 
-[INotifyPropertyChanged]
-public partial class ViewModel
+public partial class ViewModel : ObservableObject
 {
     public Language Language
     {
-        get => language;
+        get => language; 
         set
         {
             LangExtension.Culture = value switch

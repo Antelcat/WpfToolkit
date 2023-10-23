@@ -1,11 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Dynamic;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Data;
-using System.Windows.Documents.Serialization;
 using System.Windows.Markup;
 using Antelcat.Wpf.Interfaces;
 
@@ -24,11 +22,9 @@ public static class LangCacheExtension
 
 public class LangExtension : MarkupExtension
 {
-	private static readonly ExpandoObject Target = new();
-
-	private static readonly List<ILanguageManager> Providers = new();
-
-	private static readonly List<Action> InitActions = new();
+	private static readonly ExpandoObject          Target      = new();
+	private static readonly List<ILanguageManager> Providers   = new();
+	private static readonly List<Action>           InitActions = new();
 
 	private static bool generated;
 
@@ -103,12 +99,12 @@ public class LangExtension : MarkupExtension
 	}
 
 	public static readonly DependencyProperty SourceProperty = DependencyProperty.RegisterAttached(
-		nameof(Source),
+		nameof(Value),
 		typeof(Binding),
 		typeof(LangExtension),
-		new PropertyMetadata(default(Binding)));
+		new PropertyMetadata(default));
 
-	public Binding? Source
+	public Binding? Value
 	{
 		get => (Binding)proxy.GetValue(SourceProperty);
 		set => proxy.SetValue(SourceProperty, value);
@@ -244,7 +240,7 @@ public class LangExtension : MarkupExtension
 			Source              = TryFind(Target, key),
 			Mode                = BindingMode.OneWay
 		};
-		if (Source == null)
+		if (Value == null)
 		{
 			ret.UpdateSourceTrigger = UpdateSourceTrigger.Explicit;
 			return ret;
@@ -258,7 +254,7 @@ public class LangExtension : MarkupExtension
 			ConverterParameter  = ConverterParameter
 		};
 		multi.Bindings.Add(ret);
-		multi.Bindings.Add(Source);
+		multi.Bindings.Add(Value);
 		return multi;
 	}
 
