@@ -4,7 +4,7 @@ using System.Windows;
 using System.Windows.Data;
 using System.Windows.Media.Animation;
 
-namespace Antelcat.Wpf.Animation.Attachments;
+namespace Antelcat.Wpf.Attachments;
 
 /// <summary>
 /// Visibility更改时播放动画
