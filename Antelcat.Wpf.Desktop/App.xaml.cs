@@ -5,7 +5,6 @@ using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
-using Antelcat.Wpf.Desktop.Strings;
 using Antelcat.Wpf.Extensions;
 
 namespace Antelcat.Wpf.Desktop
@@ -17,7 +16,6 @@ namespace Antelcat.Wpf.Desktop
     {
         public App()
         {
-            LangExtension.RegisterLanguageSource(ResourcesProvider.Instance);
         }
     }
 }

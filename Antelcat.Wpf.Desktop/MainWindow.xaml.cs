@@ -26,6 +26,8 @@ namespace Antelcat.Wpf.Desktop
         {
             InitializeComponent();
             DataContext = new ViewModel();
+
+            var str = "zh";
         }
     }
 }

@@ -14,7 +14,6 @@
       </EmbeddedResource>
       <EmbeddedResource Update="Strings\Resources.zh.resx">
         <Generator>ResXFileCodeGenerator</Generator>
-        <LastGenOutput>Resources.zh.Designer.cs</LastGenOutput>
         <DependentUpon>Resources.resx</DependentUpon>
       </EmbeddedResource>
     </ItemGroup>
@@ -25,22 +24,10 @@
         <AutoGen>True</AutoGen>
         <DependentUpon>Resources.resx</DependentUpon>
       </Compile>
-      <Compile Update="Strings\ResourcesProvider.g.cs">
-        <AutoGen>True</AutoGen>
-        <DesignTime>True</DesignTime>
-        <DependentUpon>ResourcesProvider.g.tt</DependentUpon>
-      </Compile>
     </ItemGroup>
 
     <ItemGroup>
       <ProjectReference Include="..\Antelcat.Wpf\Antelcat.Wpf.csproj" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <None Update="Strings\ResourcesProvider.g.tt">
-        <Generator>TextTemplatingFileGenerator</Generator>
-        <LastGenOutput>ResourcesProvider.g.cs</LastGenOutput>
-      </None>
     </ItemGroup>
 
     <ItemGroup>

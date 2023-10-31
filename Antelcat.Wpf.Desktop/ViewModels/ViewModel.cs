@@ -3,43 +3,36 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
 using System.Runtime.CompilerServices;
+using System.Windows;
 using Antelcat.Wpf.Extensions;
 using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace Antelcat.Wpf.Desktop.ViewModels;
 
-
-public enum Language
-{
-    English,
-    Chinese,
-    Japanese
-}
-
 public partial class ViewModel : ObservableObject
 {
-    public Language Language
+    public CultureInfo? Language
     {
         get => language; 
         set
         {
-            LangExtension.Culture = value switch
-            {
-                Language.Chinese => new CultureInfo("zh"),
-                Language.English => new CultureInfo("en"),
-                Language.Japanese => new CultureInfo("jp"),
-                _ => new CultureInfo(0)
-            };
-            language = value;
+            if (value is null) return;
+            language              = value;
+            I18NExtension.Culture = value;
             OnPropertyChanged();
             OnPropertyChanged(nameof(Description));
         }
     }
 
-    private Language language;
+    private CultureInfo? language;
 
-    public Language Description => Language; 
-    
-    public static Language[] Languages { get; } = { Language.English, Language.Chinese, Language.Japanese };
+    public CultureInfo? Description => Language;
+
+    public static CultureInfo[] Languages { get; } =
+    {
+        new("zh"),
+        new("en"),
+        new("jp"),
+    };
 
 }

@@ -8,6 +8,10 @@
     <Platforms>AnyCPU;x86;x64</Platforms>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Antelcat.Wpf.I18N" Version="1.1.0" />
+  </ItemGroup>
+
 
 
 
