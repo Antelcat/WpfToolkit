@@ -12,11 +12,11 @@ public static class BetterScrollViewer
 	public static void MakeScrollEventBubbleWhenReachLimit()
 	{
 		EventManager.RegisterClassHandler(typeof(ScrollViewer),
-			UIElement.PreviewMouseWheelEvent,
-			new MouseWheelEventHandler(ScrollViewer_OnPreviewMouseWheel));
+			UIElement.MouseWheelEvent,
+			new MouseWheelEventHandler(ScrollViewer_OnMouseWheel));
 	}
 
-	private static void ScrollViewer_OnPreviewMouseWheel(object sender, MouseWheelEventArgs e)
+	private static void ScrollViewer_OnMouseWheel(object sender, MouseWheelEventArgs e)
 	{
 		if (e.Handled)
 		{
@@ -24,25 +24,33 @@ public static class BetterScrollViewer
 		}
 
 		var scrollViewer = (ScrollViewer)sender;
-		if (!(scrollViewer.ViewportHeight < scrollViewer.ScrollableHeight)) return;
-		if (e.Delta > 0)
+		if (scrollViewer.ViewportHeight < scrollViewer.ExtentHeight)
 		{
-			if (scrollViewer.VerticalOffset > 0)
+			// 如果内容不足以滚动，那么一定是触顶或者触底，冒泡
+			if (e.Delta > 0)
 			{
-				return;
+				if (scrollViewer.VerticalOffset > 0)
+				{
+					return;
+				}
+			}
+			else
+			{
+				if (scrollViewer.VerticalOffset + scrollViewer.ViewportHeight < scrollViewer.ExtentHeight)
+				{
+					return;
+				}
 			}
 		}
-		else
-		{
-			if (scrollViewer.VerticalOffset + scrollViewer.ViewportHeight < scrollViewer.ScrollableHeight)
-			{
-				return;
-			}
-		}
-
+		
 		// 如果触底或触顶，冒泡
 		e.Handled = true;
-		var e2 = new MouseWheelEventArgs(e.MouseDevice, e.Timestamp, e.Delta) { RoutedEvent = UIElement.MouseWheelEvent };
-		scrollViewer.RaiseEvent(e2);
+
+		if (scrollViewer.Parent is UIElement parent)
+		{
+			var e2 = new MouseWheelEventArgs(e.MouseDevice, e.Timestamp, e.Delta)
+				{ RoutedEvent = UIElement.MouseWheelEvent };
+			parent.RaiseEvent(e2);
+		}
 	}
 }
