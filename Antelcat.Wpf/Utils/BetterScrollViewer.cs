@@ -1,6 +1,7 @@
 ﻿using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
 
 namespace Antelcat.Wpf.Utils;
 
@@ -46,11 +47,21 @@ public static class BetterScrollViewer
 		// 如果触底或触顶，冒泡
 		e.Handled = true;
 
-		if (scrollViewer.Parent is UIElement parent)
+		var parent = scrollViewer.Parent;
+		while (parent != null)
 		{
-			var e2 = new MouseWheelEventArgs(e.MouseDevice, e.Timestamp, e.Delta)
-				{ RoutedEvent = UIElement.MouseWheelEvent };
-			parent.RaiseEvent(e2);
+			if (parent is ScrollViewer parentScrollViewer)
+			{
+				var e2 = new MouseWheelEventArgs(e.MouseDevice, e.Timestamp, e.Delta)
+				{
+					RoutedEvent = UIElement.MouseWheelEvent,
+					Source = e.OriginalSource
+				};
+				parentScrollViewer.RaiseEvent(e2);
+				return;
+			}
+			
+			parent = VisualTreeHelper.GetParent(parent);
 		}
 	}
 }
