@@ -128,17 +128,17 @@ public static class VisualExtension {
 	/// <summary>
 	/// 寻找类型为T的UI元素，如果遇到S类型的元素则停止寻找，返回null
 	/// </summary>
-	/// <typeparam name="T"></typeparam>
-	/// <typeparam name="S"></typeparam>
+	/// <typeparam name="TTarget"></typeparam>
+	/// <typeparam name="TStop"></typeparam>
 	/// <param name="child"></param>
 	/// <returns></returns>
 	// ReSharper disable once InconsistentNaming
-	public static T? FindParent<T, S>(this DependencyObject? child) where T : class where S : class {
+	public static TTarget? FindParent<TTarget, TStop>(this DependencyObject? child) where TTarget : class where TStop : class {
 		while (child is not null and not Window) {
 			switch (child) {
-				case S:
+				case TStop:
 					return null;
-				case T t:
+				case TTarget t:
 					return t;
 				case Run run:
 					child = run.Parent;
