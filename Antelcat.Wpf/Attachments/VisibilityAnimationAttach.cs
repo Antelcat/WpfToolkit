@@ -57,6 +57,18 @@ public class VisibilityAnimationAttach {
 	public static IEasingFunction GetEasingFunction(DependencyObject element) {
 		return (IEasingFunction)element.GetValue(EasingFunctionProperty);
 	}
+	
+	public static readonly DependencyProperty DurationProperty = DependencyProperty.RegisterAttached(
+		"Duration", typeof(Duration), typeof(VisibilityAnimationAttach), 
+		new PropertyMetadata(new Duration(TimeSpan.FromMilliseconds(400))));
+	
+	public static void SetDuration(DependencyObject element, Duration value) {
+		element.SetValue(DurationProperty, value);
+	}
+	
+	public static Duration GetDuration(DependencyObject element) {
+		return (Duration)element.GetValue(DurationProperty);
+	}
 
 	/// <summary>
 	/// Visibility changed
@@ -101,7 +113,7 @@ public class VisibilityAnimationAttach {
 		// In any case return value of this method will be Visibility.Visible, 
 		// to allow the animation.
 		var opacityAnimation = new DoubleAnimation {
-			Duration = new Duration(TimeSpan.FromMilliseconds(400)),
+			Duration = GetDuration(element),
 			EasingFunction = GetEasingFunction(element)
 		};
 
