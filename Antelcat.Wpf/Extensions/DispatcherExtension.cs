@@ -12,7 +12,7 @@ public static class DispatcherExtension
 	/// <param name="task"></param>
 	/// <returns></returns>
 	/// <exception cref="AggregateException"></exception>
-	public static void AwaitOnDispatcherFrame(this Task task)
+	public static void WaitOnDispatcherFrame(this Task task)
 	{
 		var                 frame             = new DispatcherFrame();
 		AggregateException? capturedException = null;
@@ -38,7 +38,7 @@ public static class DispatcherExtension
 	/// <typeparam name="TResult"></typeparam>
 	/// <returns></returns>
 	/// <exception cref="AggregateException"></exception>
-	public static TResult? AwaitOnDispatcherFrame<TResult>(this Task<TResult> task)
+	public static TResult WaitOnDispatcherFrame<TResult>(this Task<TResult> task)
 	{
 		var frame = new DispatcherFrame();
 		
@@ -60,6 +60,6 @@ public static class DispatcherExtension
 			throw capturedException;
 		}
 		
-		return result;
+		return result ?? throw new InvalidOperationException("Task result is null");
 	}
 }
