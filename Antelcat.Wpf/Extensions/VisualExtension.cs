@@ -56,6 +56,8 @@ public static class VisualExtension
         };
 
     public static IntPtr GetHandle(this Visual visual) => (PresentationSource.FromVisual(visual) as HwndSource)?.Handle ?? IntPtr.Zero;
+    
+    public static IntPtr GetHandle(this Window window) => new WindowInteropHelper(window).EnsureHandle();
 
     internal static void HitTestVisibleElements(Visual visual, HitTestResultCallback resultCallback, HitTestParameters parameters) =>
         VisualTreeHelper.HitTest(visual, ExcludeNonVisualElements, resultCallback, parameters);

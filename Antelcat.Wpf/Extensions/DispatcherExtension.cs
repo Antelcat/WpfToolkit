@@ -62,4 +62,49 @@ public static class DispatcherExtension
 		
 		return result ?? throw new InvalidOperationException("Task result is null");
 	}
+
+	/// <summary>
+	/// 检查当前是否在UI线程，如果是，直接调用；否则用Dispatcher异步调用
+	/// </summary>
+	/// <typeparam name="T"></typeparam>
+	/// <param name="dispatcher"></param>
+	/// <param name="callback"></param>
+	/// <returns></returns>
+	public static async ValueTask<T> CheckAndDispatchAsync<T>(this Dispatcher dispatcher, Func<T> callback) {
+		if (dispatcher.CheckAccess()) {
+			return callback();
+		}
+
+		return await dispatcher.InvokeAsync(callback);
+	}
+
+	/// <summary>
+	/// 检查当前是否在UI线程，如果是，直接调用；否则用Dispatcher异步调用
+	/// </summary>
+	/// <param name="dispatcher"></param>
+	/// <param name="callback"></param>
+	/// <returns></returns>
+	public static async ValueTask CheckAndDispatchAsync(this Dispatcher dispatcher, Action callback) {
+		if (dispatcher.CheckAccess()) {
+			callback();
+			return;
+		}
+
+		await dispatcher.InvokeAsync(callback);
+	}
+
+	/// <summary>
+	/// 检查当前是否在UI线程，如果是，直接调用；否则用Dispatcher调用
+	/// </summary>
+	/// <param name="dispatcher"></param>
+	/// <param name="callback"></param>
+	/// <returns></returns>
+	public static void CheckAndDispatch(this Dispatcher dispatcher, Action callback) {
+		if (dispatcher.CheckAccess()) {
+			callback();
+			return;
+		}
+
+		dispatcher.Invoke(callback);
+	}
 }
