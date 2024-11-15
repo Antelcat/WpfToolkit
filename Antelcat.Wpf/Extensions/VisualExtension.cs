@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Linq;
 using System.Windows;
-using System.Windows.Documents;
 using System.Windows.Interop;
 using System.Windows.Media;
 
@@ -9,7 +8,7 @@ namespace Antelcat.Wpf.Extensions;
 
 public static class VisualExtension
 {
-    internal static VisualStateGroup? TryGetVisualStateGroup(DependencyObject d, string groupName)
+    public static VisualStateGroup? TryGetVisualStateGroup(DependencyObject d, string groupName)
     {
         var root = GetImplementationRoot(d);
         if (root == null) return null;
@@ -20,43 +19,13 @@ public static class VisualExtension
             .FirstOrDefault(group => string.CompareOrdinal(groupName, group.Name) == 0);
     }
 
-    internal static FrameworkElement? GetImplementationRoot(DependencyObject d) =>
+    public static FrameworkElement? GetImplementationRoot(DependencyObject d) =>
         1 == VisualTreeHelper.GetChildrenCount(d)
             ? VisualTreeHelper.GetChild(d, 0) as FrameworkElement
             : null;
 
-    public static T? GetChild<T>(this DependencyObject? d) where T : DependencyObject
-    {
-        switch (d)
-        {
-            case null:
-                return default;
-            case T t:
-                return t;
-        }
-
-        for (var i = 0; i < VisualTreeHelper.GetChildrenCount(d); i++)
-        {
-            var child = VisualTreeHelper.GetChild(d, i);
-
-            var result = GetChild<T>(child);
-            if (result != null) return result;
-        }
-
-        return default;
-    }
-
-    public static T? GetParent<T>(this DependencyObject? d) where T : DependencyObject =>
-        d switch
-        {
-            null => default,
-            T t => t,
-            Window => null,
-            _ => GetParent<T>(VisualTreeHelper.GetParent(d))
-        };
-
     public static IntPtr GetHandle(this Visual visual) => (PresentationSource.FromVisual(visual) as HwndSource)?.Handle ?? IntPtr.Zero;
-    
+
     public static IntPtr GetHandle(this Window window) => new WindowInteropHelper(window).EnsureHandle();
 
     internal static void HitTestVisibleElements(Visual visual, HitTestResultCallback resultCallback, HitTestParameters parameters) =>
@@ -70,16 +39,6 @@ public static class VisualExtension
             return HitTestFilterBehavior.Continue;
 
         return HitTestFilterBehavior.ContinueSkipSelfAndChildren;
-    }
-
-    public static bool IsChildOf(this object child, UIElement parent, UIElement? stopAt = null)
-    {
-        if (child is DependencyObject ui)
-        {
-            return ui.IsChildOf(parent, stopAt);
-        }
-
-        return false;
     }
 
     public static bool IsChildOf(this DependencyObject? child, UIElement parent, UIElement? stopAt = null)
@@ -100,29 +59,26 @@ public static class VisualExtension
         return false;
     }
 
-    public static TTarget? FindParent<TTarget>(this object child) where TTarget : class
-    {
-        if (child is DependencyObject ui)
-        {
-            return ui.FindParent<TTarget>();
-        }
-        return null;
-    }
-
-    public static TTarget? FindParent<TTarget>(this DependencyObject? child) where TTarget : class
+    public static TTarget? FindParent<TTarget>(this DependencyObject? child, string? targetName = null) where TTarget : DependencyObject
     {
         while (child is not null and not Window)
         {
             switch (child)
             {
-                case TTarget t:
+                case TTarget t when targetName is null || t is FrameworkElement fe && fe.Name == targetName:
+                {
                     return t;
-                case Run run:
-                    child = run.Parent;
+                }
+                case FrameworkContentElement fce:
+                {
+                    child = fce.Parent;
                     break;
+                }
                 default:
+                {
                     child = VisualTreeHelper.GetParent(child);
                     break;
+                }
             }
         }
 
@@ -130,81 +86,77 @@ public static class VisualExtension
     }
 
     /// <summary>
-    /// 寻找类型为T的UI元素，如果遇到S类型的元素则停止寻找，返回null
+    /// 寻找类型为TTarget的UI元素，如果遇到TStop类型的元素则停止寻找，返回null
     /// </summary>
     /// <typeparam name="TTarget"></typeparam>
-    /// <typeparam name="TStop"></typeparam>
+    /// <typeparam name="TStopAt"></typeparam>
     /// <param name="child"></param>
+    /// <param name="targetName"></param>
     /// <returns></returns>
     // ReSharper disable once InconsistentNaming
-    public static TTarget? FindParent<TTarget, TStop>(this object child) where TTarget : class where TStop : class
-    {
-        if (child is DependencyObject ui)
-        {
-            return ui.FindParent<TTarget, TStop>();
-        }
-
-        return null;
-    }
-
-    /// <summary>
-    /// 寻找类型为T的UI元素，如果遇到S类型的元素则停止寻找，返回null
-    /// </summary>
-    /// <typeparam name="TTarget"></typeparam>
-    /// <typeparam name="TStop"></typeparam>
-    /// <param name="child"></param>
-    /// <returns></returns>
-    // ReSharper disable once InconsistentNaming
-    public static TTarget? FindParent<TTarget, TStop>(this DependencyObject? child) where TTarget : class where TStop : class
+    public static TTarget? FindParent<TTarget, TStopAt>(this DependencyObject? child, string? targetName = null)
+        where TTarget : DependencyObject where TStopAt : DependencyObject
     {
         while (child is not null and not Window)
         {
             switch (child)
             {
-                case TStop:
+                case TStopAt:
+                {
                     return null;
-                case TTarget t:
+                }
+                case TTarget t when targetName is null || t is FrameworkElement fe && fe.Name == targetName:
+                {
                     return t;
-                case Run run:
-                    child = run.Parent;
+                }
+                case FrameworkContentElement fce:
+                {
+                    child = fce.Parent;
                     break;
+                }
                 default:
+                {
                     child = VisualTreeHelper.GetParent(child);
                     break;
+                }
             }
         }
 
         return null;
     }
 
-    public static TTarget? FindChild<TTarget>(this object parent) where TTarget : class
-    {
-        if (parent is DependencyObject ui)
-        {
-            return ui.FindChild<TTarget>();
-        }
-        return null;
-    }
-
-    public static TTarget? FindChild<TTarget>(this DependencyObject? parent) where TTarget : class
+    /// <summary>
+    /// 递归寻找子元素，深度优先
+    /// </summary>
+    /// <param name="parent"></param>
+    /// <param name="targetName"></param>
+    /// <typeparam name="TTarget"></typeparam>
+    /// <returns></returns>
+    public static TTarget? FindChild<TTarget>(this DependencyObject? parent, string? targetName = null) where TTarget : DependencyObject
     {
         switch (parent)
         {
             case null:
+            {
                 return null;
-            case TTarget t:
+            }
+            case TTarget t when targetName is null || t is FrameworkElement fe && fe.Name == targetName:
+            {
                 return t;
+            }
             default:
+            {
                 for (var i = 0; i < VisualTreeHelper.GetChildrenCount(parent); i++)
                 {
                     var child = VisualTreeHelper.GetChild(parent, i);
-                    var result = FindChild<TTarget>(child);
+                    var result = FindChild<TTarget>(child, targetName);
                     if (result != null)
                     {
                         return result;
                     }
                 }
                 return null;
+            }
         }
     }
 }
