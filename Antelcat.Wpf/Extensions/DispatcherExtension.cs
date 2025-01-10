@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Threading;
 
@@ -10,13 +11,18 @@ public static class DispatcherExtension
 	/// 在指定的DispatcherFrame上运行一个Task，等待其完成，避免阻塞UI线程
 	/// </summary>
 	/// <param name="task"></param>
+	/// <param name="cancellationToken"></param>
 	/// <returns></returns>
 	/// <exception cref="AggregateException"></exception>
-	public static void WaitOnDispatcherFrame(this Task task)
+	public static void WaitOnDispatcherFrame(this Task task, CancellationToken cancellationToken = default)
 	{
 		var                 frame             = new DispatcherFrame();
 		AggregateException? capturedException = null;
-		
+
+		if (cancellationToken != CancellationToken.None)
+		{
+			cancellationToken.Register(() => frame.Continue = false);
+		}
 		task.ContinueWith(t =>
 		{
 			capturedException = t.Exception;
