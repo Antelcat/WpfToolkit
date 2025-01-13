@@ -22,8 +22,24 @@ public class UIElementAdorner(UIElement adornedElement, UIElement uiElement) : V
 
     protected override Size MeasureOverride(Size constraint)
     {
-        uiElement.Measure(constraint);
-        return uiElement.DesiredSize;
+        var desiredWidth = HorizontalAlignment switch
+        {
+            HorizontalAlignment.Stretch => constraint.Width,
+            HorizontalAlignment.Left => uiElement.DesiredSize.Width,
+            HorizontalAlignment.Right => uiElement.DesiredSize.Width,
+            HorizontalAlignment.Center => uiElement.DesiredSize.Width,
+            _ => 0
+        };
+        var desiredHeight = VerticalAlignment switch
+        {
+            VerticalAlignment.Stretch => constraint.Height,
+            VerticalAlignment.Top => uiElement.DesiredSize.Height,
+            VerticalAlignment.Bottom => uiElement.DesiredSize.Height,
+            VerticalAlignment.Center => uiElement.DesiredSize.Height,
+            _ => 0
+        };
+        uiElement.Measure(new Size(desiredWidth, desiredHeight));
+        return new Size(desiredWidth, desiredHeight);
     }
 }
 
