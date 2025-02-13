@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Interop;
 using System.Windows.Media;
 
@@ -146,7 +147,8 @@ public static class VisualExtension
             }
             default:
             {
-                for (var i = 0; i < VisualTreeHelper.GetChildrenCount(parent); i++)
+                var childCount = VisualTreeHelper.GetChildrenCount(parent);
+                for (var i = 0; i < childCount; i++)
                 {
                     var child = VisualTreeHelper.GetChild(parent, i);
                     var result = FindChild<TTarget>(child, targetName);
@@ -158,5 +160,23 @@ public static class VisualExtension
                 return null;
             }
         }
+    }
+
+    public static DependencyObject? GetChild(this DependencyObject parent, int index)
+    {
+        var childCount = VisualTreeHelper.GetChildrenCount(parent);
+        if (index < 0) index = childCount + index;
+        if (index < 0 || index >= childCount) return null;
+        return VisualTreeHelper.GetChild(parent, index);
+    }
+
+    public static ScrollViewer GetScrollViewer(this ItemsControl itemsControl)
+    {
+        if (itemsControl.GetChild(0) is Border border && border.GetChild(0) is ScrollViewer scrollViewer)
+        {
+            return scrollViewer;
+        }
+
+        return itemsControl.FindChild<ScrollViewer>() ?? throw new InvalidOperationException("ScrollViewer not found");
     }
 }
