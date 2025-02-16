@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
@@ -60,15 +61,17 @@ public static class VisualExtension
         return false;
     }
 
-    public static TTarget? FindParent<TTarget>(this DependencyObject? child, string? targetName = null) where TTarget : DependencyObject
+    public static IEnumerable<TTarget> EnumerateAncestors<TTarget>(this DependencyObject? child, string? targetName = null) where TTarget : DependencyObject
     {
-        while (child is not null and not Window)
+        while (child is not null)
         {
             switch (child)
             {
                 case TTarget t when targetName is null || t is FrameworkElement fe && fe.Name == targetName:
                 {
-                    return t;
+                    yield return t;
+                    child = VisualTreeHelper.GetParent(child);
+                    break;
                 }
                 case FrameworkContentElement fce:
                 {
@@ -82,9 +85,10 @@ public static class VisualExtension
                 }
             }
         }
-
-        return null;
     }
+
+    public static TTarget? FindParent<TTarget>(this DependencyObject? child, string? targetName = null) where TTarget : DependencyObject =>
+        EnumerateAncestors<TTarget>(child, targetName).FirstOrDefault();
 
     /// <summary>
     /// 寻找类型为TTarget的UI元素，如果遇到TStop类型的元素则停止寻找，返回null
@@ -98,32 +102,47 @@ public static class VisualExtension
     public static TTarget? FindParent<TTarget, TStopAt>(this DependencyObject? child, string? targetName = null)
         where TTarget : DependencyObject where TStopAt : DependencyObject
     {
-        while (child is not null and not Window)
+        foreach (var parent in EnumerateAncestors<DependencyObject>(child))
         {
-            switch (child)
+            if (parent is TStopAt)
             {
-                case TStopAt:
-                {
-                    return null;
-                }
-                case TTarget t when targetName is null || t is FrameworkElement fe && fe.Name == targetName:
-                {
-                    return t;
-                }
-                case FrameworkContentElement fce:
-                {
-                    child = fce.Parent;
-                    break;
-                }
-                default:
-                {
-                    child = VisualTreeHelper.GetParent(child);
-                    break;
-                }
+                return null;
+            }
+
+            if (parent is TTarget t && (targetName is null || t is FrameworkElement fe && fe.Name == targetName))
+            {
+                return t;
             }
         }
 
         return null;
+    }
+
+    public static IEnumerable<TTarget> EnumerateDescendants<TTarget>(this DependencyObject? parent, string? targetName = null) where TTarget : DependencyObject
+    {
+        if (parent is null) yield break;
+
+        var childCount = VisualTreeHelper.GetChildrenCount(parent);
+        for (var i = 0; i < childCount; i++)
+        {
+            var child = VisualTreeHelper.GetChild(parent, i);
+            switch (child)
+            {
+                case TTarget t when targetName is null || t is FrameworkElement fe && fe.Name == targetName:
+                {
+                    yield return t;
+                    break;
+                }
+                default:
+                {
+                    foreach (var descendant in EnumerateDescendants<TTarget>(child, targetName))
+                    {
+                        yield return descendant;
+                    }
+                    break;
+                }
+            }
+        }
     }
 
     /// <summary>
@@ -133,34 +152,8 @@ public static class VisualExtension
     /// <param name="targetName"></param>
     /// <typeparam name="TTarget"></typeparam>
     /// <returns></returns>
-    public static TTarget? FindChild<TTarget>(this DependencyObject? parent, string? targetName = null) where TTarget : DependencyObject
-    {
-        switch (parent)
-        {
-            case null:
-            {
-                return null;
-            }
-            case TTarget t when targetName is null || t is FrameworkElement fe && fe.Name == targetName:
-            {
-                return t;
-            }
-            default:
-            {
-                var childCount = VisualTreeHelper.GetChildrenCount(parent);
-                for (var i = 0; i < childCount; i++)
-                {
-                    var child = VisualTreeHelper.GetChild(parent, i);
-                    var result = FindChild<TTarget>(child, targetName);
-                    if (result != null)
-                    {
-                        return result;
-                    }
-                }
-                return null;
-            }
-        }
-    }
+    public static TTarget? FindChild<TTarget>(this DependencyObject? parent, string? targetName = null) where TTarget : DependencyObject =>
+        EnumerateDescendants<TTarget>(parent, targetName).FirstOrDefault();
 
     public static DependencyObject? GetChild(this DependencyObject parent, int index)
     {
