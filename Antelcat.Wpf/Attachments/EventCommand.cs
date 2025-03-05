@@ -6,19 +6,19 @@ using System.Windows.Input;
 
 namespace Antelcat.Wpf.Attachments;
 
-public class EventCommandAttach
+public class EventCommand
 {
     private readonly static Dictionary<UIElement, RoutedEventHandler> AttachedElements = new();
 
     public static readonly DependencyProperty EventNameProperty = DependencyProperty.RegisterAttached(
-        "EventName", typeof(string), typeof(EventCommandAttach),
-        new PropertyMetadata(default(string), EventName_OnChanged));
+        "EventName", typeof(string), typeof(EventCommand),
+        new PropertyMetadata(null, EventName_OnChanged));
 
     private static void EventName_OnChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
         if (d is not UIElement element)
         {
-            throw new NotSupportedException($"Only {nameof(UIElement)} supports {nameof(EventCommandAttach)}");
+            throw new NotSupportedException($"Only {nameof(UIElement)} supports {nameof(EventCommand)}");
         }
         var type = d.GetType();
         var eventName = (string)e.NewValue;
@@ -76,7 +76,7 @@ public class EventCommandAttach
     }
 
     public static readonly DependencyProperty CommandProperty = DependencyProperty.RegisterAttached(
-        "Command", typeof(ICommand), typeof(EventCommandAttach),
+        "Command", typeof(ICommand), typeof(EventCommand),
         new PropertyMetadata(default(ICommand), Command_OnChanged));
 
     private static void Command_OnChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)

@@ -10,10 +10,10 @@ namespace Antelcat.Wpf.Attachments;
 /// Visibility更改时播放动画
 /// </summary>
 /// https://www.codeproject.com/Articles/57175/WPF-How-To-Animate-Visibility-Property
-public class VisibilityAnimationAttach {
+public class VisibilityAnimation {
 	private static readonly Dictionary<FrameworkElement, bool> AttachedElements = new();
 
-	static VisibilityAnimationAttach() {
+	static VisibilityAnimation() {
 		UIElement.VisibilityProperty.AddOwner(
 				typeof(FrameworkElement),
 				new FrameworkPropertyMetadata(
@@ -23,7 +23,7 @@ public class VisibilityAnimationAttach {
 	}
 
 	public static readonly DependencyProperty AnimationTypeProperty = DependencyProperty.RegisterAttached(
-		"AnimationType", typeof(VisibilityAnimationType), typeof(VisibilityAnimationAttach), 
+		"AnimationType", typeof(VisibilityAnimationType), typeof(VisibilityAnimation), 
 		new PropertyMetadata(default(VisibilityAnimationType), VisibilityAnimationType_OnChanged));
 
 	public static void SetAnimationType(DependencyObject element, VisibilityAnimationType value) {
@@ -36,7 +36,7 @@ public class VisibilityAnimationAttach {
 
 	private static void VisibilityAnimationType_OnChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) {
 		if (d is not FrameworkElement element) {
-			throw new NotSupportedException($"Only {nameof(FrameworkElement)} supports {nameof(VisibilityAnimationAttach)}");
+			throw new NotSupportedException($"Only {nameof(FrameworkElement)} supports {nameof(VisibilityAnimation)}");
 		}
 
 		if (e.NewValue is VisibilityAnimationType.None) {
@@ -47,7 +47,7 @@ public class VisibilityAnimationAttach {
 	}
 
 	public static readonly DependencyProperty EasingFunctionProperty = DependencyProperty.RegisterAttached(
-		"EasingFunction", typeof(IEasingFunction), typeof(VisibilityAnimationAttach), 
+		"EasingFunction", typeof(IEasingFunction), typeof(VisibilityAnimation), 
 		new PropertyMetadata(new CubicEase { EasingMode = EasingMode.EaseInOut }));
 
 	public static void SetEasingFunction(DependencyObject element, IEasingFunction value) {
@@ -59,7 +59,7 @@ public class VisibilityAnimationAttach {
 	}
 	
 	public static readonly DependencyProperty DurationProperty = DependencyProperty.RegisterAttached(
-		"Duration", typeof(Duration), typeof(VisibilityAnimationAttach), 
+		"Duration", typeof(Duration), typeof(VisibilityAnimation), 
 		new PropertyMetadata(new Duration(TimeSpan.FromMilliseconds(400))));
 	
 	public static void SetDuration(DependencyObject element, Duration value) {

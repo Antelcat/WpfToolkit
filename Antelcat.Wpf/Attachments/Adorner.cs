@@ -8,7 +8,7 @@ namespace Antelcat.Wpf.Attachments;
 /// <summary>
 /// 允许直接在xaml中附加装饰器
 /// </summary>
-public class AdornerAttach
+public class Adorner
 {
     public static object? GetContent(DependencyObject d) => d.GetValue(ContentProperty);
 
@@ -17,7 +17,7 @@ public class AdornerAttach
     public static readonly DependencyProperty ContentProperty =
         DependencyProperty.RegisterAttached("Content",
             typeof(object),
-            typeof(AdornerAttach),
+            typeof(Adorner),
             new PropertyMetadata(null, ContentProperty_OnChanged));
 
     public static HorizontalAlignment GetHorizontalAlignment(DependencyObject d) => (HorizontalAlignment)d.GetValue(HorizontalAlignmentProperty);
@@ -27,7 +27,7 @@ public class AdornerAttach
     public static readonly DependencyProperty HorizontalAlignmentProperty =
         DependencyProperty.RegisterAttached("HorizontalAlignment",
             typeof(HorizontalAlignment),
-            typeof(AdornerAttach),
+            typeof(Adorner),
             new PropertyMetadata(HorizontalAlignment.Stretch, Adorner_OnPropertyChanged));
 
     public static VerticalAlignment GetVerticalAlignment(DependencyObject d) => (VerticalAlignment)d.GetValue(VerticalAlignmentProperty);
@@ -37,10 +37,10 @@ public class AdornerAttach
     public static readonly DependencyProperty VerticalAlignmentProperty =
         DependencyProperty.RegisterAttached("VerticalAlignment",
             typeof(VerticalAlignment),
-            typeof(AdornerAttach),
+            typeof(Adorner),
             new PropertyMetadata(VerticalAlignment.Stretch, Adorner_OnPropertyChanged));
 
-    private readonly static Dictionary<UIElement, Adorner> AttachedAdorners = [];
+    private readonly static Dictionary<UIElement, System.Windows.Documents.Adorner> AttachedAdorners = [];
 
     private static void ContentProperty_OnChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
