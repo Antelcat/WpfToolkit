@@ -10,7 +10,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Antelcat.I18N.WPF" Version="1.0.1" />
+    <PackageReference Include="Antelcat.I18N.WPF" Version="2.0.0-preview-1" />
   </ItemGroup>
 
 </Project>
