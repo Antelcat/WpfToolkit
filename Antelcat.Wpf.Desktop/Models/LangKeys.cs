@@ -1,4 +1,4 @@
-using Antelcat.Wpf.I18N.Attributes;
+using Antelcat.I18N.Attributes;
 
 namespace Antelcat.Wpf.Desktop.Models;
 

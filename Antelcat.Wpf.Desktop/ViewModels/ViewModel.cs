@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Windows;
+using Antelcat.I18N.WPF;
 using Antelcat.Wpf.Extensions;
 using CommunityToolkit.Mvvm.ComponentModel;
 
